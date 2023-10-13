@@ -230,153 +230,154 @@ def main(config):
             ),
         )
 
-    weather_data_history = get_data("history", polling_interval, lat, lng, local_date, api_key)
-    weather_data_current = get_data("current", polling_interval, lat, lng, local_date, api_key)
-
-    if fahrenheit_or_celsius == "true":
-        unit_str = "c"
     else:
-        unit_str = "f"
+        weather_data_history = get_data("history", polling_interval, lat, lng, local_date, api_key)
+        weather_data_current = get_data("current", polling_interval, lat, lng, local_date, api_key)
 
-    min_unit = "mintemp_" + unit_str
-    max_unit = "maxtemp_" + unit_str
-    current_unit = "temp_" + unit_str
-
-    min_temp_float = weather_data_history["forecast"]["forecastday"][0]["day"][min_unit]
-    max_temp_float = weather_data_history["forecast"]["forecastday"][0]["day"][max_unit]
-    current_temp_float = weather_data_current["current"][current_unit]
-
-    if current_temp_float > max_temp_float:
-        max_temp_float = current_temp_float
-
-    min_temp_str = humanize.ftoa(min_temp_float, 0)
-    max_temp_str = humanize.ftoa(max_temp_float, 0)
-    current_temp_str = humanize.ftoa(current_temp_float, 0)
-
-    # POSITIONING - the whole thing is just one big stack with each item padded out to position it properly
-    # COLUMN 1
-    day_offset_h = 1
-    day_offset_v = 3
-    min_temp_offset_h = 1
-    min_temp_offset_v = 17
-    min_label_offset_h = 1
-    min_label_offset_v = 26
-
-    # COLUMN 2
-    time_offset_v = 0
-    time_offset_h = 17
-    current_temp_offset_v = 8
-    current_temp_offset_h = 27
-    plot_offset_h = 18
-    plot_offset_v = 17
-
-    # COLUMN 3
-    date_offset_h = 52
-    date_offset_v = 1
-    month_offset_v = 8
-    month_offset_h = 49
-    max_temp_offset_h = 50
-    max_temp_offset_v = 17
-    max_label_offset_h = 48
-    max_label_offset_v = 26
-
-    # ADJUSTMENTS
-    if time_format_24 == "true":
-        display_time = humanize.time_format("HH:mm", local_time)
-        time_offset_h += 5
-    elif len(display_time) < 7:
-        time_offset_h += 2
-
-    if len(min_temp_str) > 2:
-        min_temp_offset_h = 1
-        min_label_offset_h = 3
-
-    if len(max_temp_str) > 2:
-        max_temp_offset_h -= 4
-        max_label_offset_h -= 0
-
-    if len(current_temp_str) > 2:
-        current_temp_offset_h -= 3
-
-    # get temps for prior hours so we can fill the bargraph
-    hour_range = local_time.hour + 1  # range goes to 1 less than value
-    for hour in range(hour_range):
         if fahrenheit_or_celsius == "true":
-            history_temp = weather_data_history["forecast"]["forecastday"][0]["hour"][hour]["temp_c"]
+            unit_str = "c"
         else:
-            history_temp = weather_data_history["forecast"]["forecastday"][0]["hour"][hour]["temp_f"]
-        mapped_temp = map(
-            history_temp,
-            min_temp_float - int(low_offset),
-            max_temp_float + int(high_offset),
-            0,
-            DEFAULT_MAX_BAR_HEIGHT,
-        )
-        history_data.extend([(hour, mapped_temp)])
+            unit_str = "f"
 
-    return render.Root(
-        # delay = 5000,
-        max_age = 90,  # can't remember what this does
-        child = render.Stack(
-            children = [
+        min_unit = "mintemp_" + unit_str
+        max_unit = "maxtemp_" + unit_str
+        current_unit = "temp_" + unit_str
 
-                # COLUMN 1
-                render.Padding(
-                    pad = (day_offset_h, day_offset_v, 0, 0),
-                    child = render.Text(date_day, color = day_color),
-                ),
-                render.Padding(
-                    pad = (min_temp_offset_h, min_temp_offset_v, 0, 0),
-                    child = render.Text(content = min_temp_str + "°", color = min_temp_color),
-                ),
-                render.Padding(
-                    pad = (min_label_offset_h, min_label_offset_v, 0, 0),
-                    child = render.Text(content = "Low", color = min_label_color, font = DEFAULT_LABEL_FONT),
-                ),
+        min_temp_float = weather_data_history["forecast"]["forecastday"][0]["day"][min_unit]
+        max_temp_float = weather_data_history["forecast"]["forecastday"][0]["day"][max_unit]
+        current_temp_float = weather_data_current["current"][current_unit]
 
-                # COLUMN 2
-                render.Padding(
-                    pad = (time_offset_h, time_offset_v, 0, 0),
-                    child = render.Text(content = display_time, color = now_label_color, font = DEFAULT_TIME_FONT),
-                ),
-                render.Padding(
-                    pad = (current_temp_offset_h, current_temp_offset_v, 0, 0),
-                    child = render.Text(content = "" + current_temp_str + "°", color = now_temp_color),
-                ),
-                render.Padding(
-                    pad = (plot_offset_h, plot_offset_v, 0, 0),
-                    child = render.Plot(
-                        data = history_data,
-                        width = 24,
-                        height = 15,
-                        color = graph_color,
-                        fill_color = graph_fill_color,
-                        x_lim = (0, 23),
-                        y_lim = (0, 15),
-                        fill = True,
+        if current_temp_float > max_temp_float:
+            max_temp_float = current_temp_float
+
+        min_temp_str = humanize.ftoa(min_temp_float, 0)
+        max_temp_str = humanize.ftoa(max_temp_float, 0)
+        current_temp_str = humanize.ftoa(current_temp_float, 0)
+
+        # POSITIONING - the whole thing is just one big stack with each item padded out to position it properly
+        # COLUMN 1
+        day_offset_h = 1
+        day_offset_v = 3
+        min_temp_offset_h = 1
+        min_temp_offset_v = 17
+        min_label_offset_h = 1
+        min_label_offset_v = 26
+
+        # COLUMN 2
+        time_offset_v = 0
+        time_offset_h = 17
+        current_temp_offset_v = 8
+        current_temp_offset_h = 27
+        plot_offset_h = 18
+        plot_offset_v = 17
+
+        # COLUMN 3
+        date_offset_h = 52
+        date_offset_v = 1
+        month_offset_v = 8
+        month_offset_h = 49
+        max_temp_offset_h = 50
+        max_temp_offset_v = 17
+        max_label_offset_h = 48
+        max_label_offset_v = 26
+
+        # ADJUSTMENTS
+        if time_format_24 == "true":
+            display_time = humanize.time_format("HH:mm", local_time)
+            time_offset_h += 5
+        elif len(display_time) < 7:
+            time_offset_h += 2
+
+        if len(min_temp_str) > 2:
+            min_temp_offset_h = 1
+            min_label_offset_h = 3
+
+        if len(max_temp_str) > 2:
+            max_temp_offset_h -= 4
+            max_label_offset_h -= 0
+
+        if len(current_temp_str) > 2:
+            current_temp_offset_h -= 3
+
+        # get temps for prior hours so we can fill the bargraph
+        hour_range = local_time.hour + 1  # range goes to 1 less than value
+        for hour in range(hour_range):
+            if fahrenheit_or_celsius == "true":
+                history_temp = weather_data_history["forecast"]["forecastday"][0]["hour"][hour]["temp_c"]
+            else:
+                history_temp = weather_data_history["forecast"]["forecastday"][0]["hour"][hour]["temp_f"]
+            mapped_temp = map(
+                history_temp,
+                min_temp_float - int(low_offset),
+                max_temp_float + int(high_offset),
+                0,
+                DEFAULT_MAX_BAR_HEIGHT,
+            )
+            history_data.extend([(hour, mapped_temp)])
+
+        return render.Root(
+            # delay = 5000,
+            max_age = 90,  # can't remember what this does
+            child = render.Stack(
+                children = [
+
+                    # COLUMN 1
+                    render.Padding(
+                        pad = (day_offset_h, day_offset_v, 0, 0),
+                        child = render.Text(date_day, color = day_color),
                     ),
-                ),
+                    render.Padding(
+                        pad = (min_temp_offset_h, min_temp_offset_v, 0, 0),
+                        child = render.Text(content = min_temp_str + "°", color = min_temp_color),
+                    ),
+                    render.Padding(
+                        pad = (min_label_offset_h, min_label_offset_v, 0, 0),
+                        child = render.Text(content = "Low", color = min_label_color, font = DEFAULT_LABEL_FONT),
+                    ),
 
-                # COLUMN 3
-                render.Padding(
-                    pad = (date_offset_h, date_offset_v, 0, 0),
-                    child = render.Text(date_date, color = date_color),
-                ),
-                render.Padding(
-                    pad = (month_offset_h, month_offset_v, 0, 0),
-                    child = render.Text(date_month, color = month_color),
-                ),
-                render.Padding(
-                    pad = (max_temp_offset_h, max_temp_offset_v, 0, 0),
-                    child = render.Text(content = max_temp_str + "°", color = max_temp_color),
-                ),
-                render.Padding(
-                    pad = (max_label_offset_h, max_label_offset_v, 0, 0),
-                    child = render.Text(content = "High", color = max_label_color, font = DEFAULT_LABEL_FONT),
-                ),
-            ],
-        ),
-    )
+                    # COLUMN 2
+                    render.Padding(
+                        pad = (time_offset_h, time_offset_v, 0, 0),
+                        child = render.Text(content = display_time, color = now_label_color, font = DEFAULT_TIME_FONT),
+                    ),
+                    render.Padding(
+                        pad = (current_temp_offset_h, current_temp_offset_v, 0, 0),
+                        child = render.Text(content = "" + current_temp_str + "°", color = now_temp_color),
+                    ),
+                    render.Padding(
+                        pad = (plot_offset_h, plot_offset_v, 0, 0),
+                        child = render.Plot(
+                            data = history_data,
+                            width = 24,
+                            height = 15,
+                            color = graph_color,
+                            fill_color = graph_fill_color,
+                            x_lim = (0, 23),
+                            y_lim = (0, 15),
+                            fill = True,
+                        ),
+                    ),
+
+                    # COLUMN 3
+                    render.Padding(
+                        pad = (date_offset_h, date_offset_v, 0, 0),
+                        child = render.Text(date_date, color = date_color),
+                    ),
+                    render.Padding(
+                        pad = (month_offset_h, month_offset_v, 0, 0),
+                        child = render.Text(date_month, color = month_color),
+                    ),
+                    render.Padding(
+                        pad = (max_temp_offset_h, max_temp_offset_v, 0, 0),
+                        child = render.Text(content = max_temp_str + "°", color = max_temp_color),
+                    ),
+                    render.Padding(
+                        pad = (max_label_offset_h, max_label_offset_v, 0, 0),
+                        child = render.Text(content = "High", color = max_label_color, font = DEFAULT_LABEL_FONT),
+                    ),
+                ],
+            ),
+        )
 
 offset_options = [
     schema.Option(
